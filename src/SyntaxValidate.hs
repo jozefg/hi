@@ -9,7 +9,7 @@ notSup loc str = Left (InvalidConstruct loc str)
 
 instance Show InvalidConstruct where
   show (InvalidConstruct loc message) =
-    "Invalid construct at " ++ show loc ++ "\n\t" ++ message
+    "Invalid construct at " ++ show loc ++ "\t" ++ message
 
 tyValidate :: Type -> Either InvalidConstruct ()
 tyValidate = undefined
