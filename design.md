@@ -71,25 +71,32 @@ have to prune whatever AST we're given. In this portion of the
 interpreter we'll traverse the code and fail if we encounter an
 unknown construct.
 
-I still want to keep the (too big) AST from src-exts because
+~I still want to keep the (too big) AST from src-exts~. I lied, this
+AST is a bit too large for my purposes. We're dealing with such a
+small subset of Haskell I don't want to bother.
 
- 1. Source location information
- 2. Off the shelf pretty-printing
+Instead I'll opt for a normal AST and have it abstract over meta
+information. Before type checking this can be `SrcLoc` tags from
+src-exts. After type checking this can be type information.
 
-Both of which we'll need for producing errors during type
-checking. Therefore assume nothing of the input, but ensure the output
-only contains our subset of Haskell.
+This means syntactic validation will actual strip away the oversized
+types from src-exts and produce a leaner, more accurate type or fail
+trying.
 
 ### Typing
-
-This portion still works across the src-exts AST, but assumes that it
-is pared down to the language we understand.
 
 Based on Mark Jones's paper, we'll type check this AST and produce a
 type annotated AST that is significantly simpler than
 src-ext's. Further, this AST will have no source information since
 from here on out we won't be producing an errors except for runtime
 exceptions.
+
+I expect to divide the type checker into a series of pre-typing passes
+that check things like
+
+ - Cycles in type synonyms
+ - Find evidence for classes
+ - Other bits and bobs
 
 This will likely be the fiddliest portion of the interpreter.
 
@@ -106,7 +113,8 @@ the type annotated AST so requires the code it handles to be well typed.
  - type classes -> records + functions
  - Annotate closures on bindings + lambdas
  - Lift lambdas into local let statements
- - Other stuffs?
+ - Fully expand all type synonyms
+ - Everything I'm forgetting to turn this into STG
 
 Once all of these simplifications have been applied, we'll output a
 new type of AST which is still type annotated but much much simpler
@@ -117,6 +125,14 @@ than the input one.
 Finally the AST we're left with is basically the source language for
 the STG machine. We'll just simulate this machine and hey presto we've
 done it!
+
+I'm not sure how to model the destructive updates for thunks. We could
+just use `IORef`s but I feel kinda dirty doing that. Maybe some
+abstraction over the concept of ref-cells into a monad. From there we
+can provide an impl of it for `IO` + `IORef` and maybe `ST` or
+something.
+
+I think Joseph A. wrote a post on this..
 
 ## Other Squishy Things
 ### Documentation

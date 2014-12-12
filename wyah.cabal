@@ -11,6 +11,7 @@ extra-source-files:  README.md
 cabal-version:       >=1.10
 executable wyah
   main-is:             Main.hs
+  other-modules:       SyntaxValidate
   build-depends:       base >=4.0 && <5.0
                      , haskell-src-exts >= 1.0
   hs-source-dirs:      src
