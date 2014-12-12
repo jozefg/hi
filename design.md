@@ -7,7 +7,7 @@ to actually write down what I plan to do.
 
 Well we're surely not going to try for all of GHC's Haskell. In fact,
 I don't even want to try for Haskell 98. Instead, we'll try to
-interpret Haskell 98 - modules. This will greatly simplify type
+interpret Haskell 98 - modules + FFI. This will greatly simplify type
 checking an interpretation since we get to see all the code at
 once. It does preclude actually using this for "real world stuff", but
 I think that's an acceptable loss.
@@ -48,11 +48,68 @@ At the end of this project we should be able to write
 
 ## How Is The Interpreter Organized
 
+The interpreter is split into five main parts. Each of these will
+completely separate and make no assumptions outside of the
+prerequisites listed.
+
+### Parsing
+For now this will be done by `haskell-src-exts`. This is mostly
+because I have no faith or time to muddle about with a parser. For now
+we'll just take one off the shelf.
+
+### Syntactic Validation
+
+Since we're only interpreting a small subset of Haskell we're going to
+have to prune whatever AST we're given. In this portion of the
+interpreter we'll traverse the code and fail if we encounter an
+unknown construct.
+
+I still want to keep the (too big) AST from src-exts because
+
+ 1. Source location information
+ 2. Off the shelf pretty-printing
+
+Both of which we'll need for producing errors during type
+checking. Therefore assume nothing of the input, but ensure the output
+only contains our subset of Haskell.
+
 ### Typing
+
+This portion still works across the src-exts AST, but assumes that it
+is pared down to the language we understand.
+
+Based on Mark Jones's paper, we'll type check this AST and produce a
+type annotated AST that is significantly simpler than
+src-ext's. Further, this AST will have no source information since
+from here on out we won't be producing an errors except for runtime
+exceptions.
+
+This will likely be the fiddliest portion of the interpreter.
 
 ### Simplification
 
+Haskell contains a lot of stuff we don't want to think about when
+we're interpreting. In order to deal with this we'll make a number of
+passes on the AST to remove constructs we don't want. This operates on
+the type annotated AST so requires the code it handles to be well typed.
+
+ - Function syntax -> simple declarations + lambdas
+ - `where` -> `let`
+ - `if` -> `case`
+ - type classes -> records + functions
+ - Annotate closures on bindings + lambdas
+ - Lift lambdas into local let statements
+ - Other stuffs?
+
+Once all of these simplifications have been applied, we'll output a
+new type of AST which is still type annotated but much much simpler
+than the input one.
+
 ### Interpretation
+
+Finally the AST we're left with is basically the source language for
+the STG machine. We'll just simulate this machine and hey presto we've
+done it!
 
 ## Other Squishy Things
 
