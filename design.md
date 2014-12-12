@@ -119,6 +119,21 @@ the STG machine. We'll just simulate this machine and hey presto we've
 done it!
 
 ## Other Squishy Things
-
 ### Documentation
+
+In order to live up to the "you" part of the project's name I really
+ought to document this process a bit. I'll do my best to write my
+thoughts down in little markdown documents like this one.
+
+I really hope to transform these into a meaningful series of blog post
+like entries, but we'll see if it actually gets to that.
+
 ### What Should the Reader Know
+
+For anyone curious of following the process. I'll document things as
+much as I can but I'll still make a number of fundamental assumptions
+
+ 1. You know Haskell enough to have written a project or two on your
+    own (have you tried Write Yourself a Scheme?)
+ 2. You know what a closure, thunk, free variable, and type checker is
+ 3. You have gone through Write Yourself a Scheme or something similar
