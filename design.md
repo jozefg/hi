@@ -18,13 +18,20 @@ I'll start with
 
  - `->`
  - `()` (both the type and value)
+ - `(,)` (both the type and value)
  - `Char`
- - `int2char`, `char2int`
- - `Int`, `Double`
- - `intPlus`, `intMinus`, ...
- - `doublePlus`, `doubleMinus`, ...
- - `Bool`, `True`, and `False`
- - `[]`, `:`, `[a]`
+ - `Int`
+ - `Double`
+ - `intPlus`
+ - `intMinus`
+ - `doublePlus`
+ - `doubleMinus`
+ - `Bool`
+ - `True`
+ - `False`
+ - `[a]`
+ - `[]`
+ - `(:)`
  - `IO`
  - `ioReturn`
  - `ioBind`
