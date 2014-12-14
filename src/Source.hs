@@ -5,7 +5,7 @@ data Name a = Name a String
 
 data Kind = Star | KFun Kind Kind
 
-data PolyType = Forall (Name ()) Type
+data PolyType = Forall [Name ()] Type
 data Type = TFun Type Type
           | TTuple Type Type
           | TUnit
