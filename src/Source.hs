@@ -32,8 +32,8 @@ data Pat a = WildP
 data Match a = Match Name [Pat a] (Exp a) [NestedDecl a]
 data Branch a = Branch (Pat a) (Exp a)
 
-data NestedDecl a = NSig Name Type
-                  | NFun Name (Fun a)
+data NestedDecl a = NSig FunSig
+                  | NFun (Fun a)
 
 data Constr = Constr Name [Name]
 data Cxt = Cxt [Constr]
