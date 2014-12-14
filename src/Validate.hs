@@ -43,6 +43,12 @@ tyValidate = \case
   TySplice{} -> notSup "Type splice"
   TyBang{} -> notSup "Type bangs"
 
+expValidate :: Exp -> Validate (S.Exp SrcLoc)
+expValidate = undefined
+
+patValidate :: Pat -> Validate (S.Pat SrcLoc)
+patValidate = undefined
+
 asstValidate :: Asst -> Validate S.Constr
 asstValidate VarA{} = notSup "Constraint kinds"
 asstValidate InfixA{} = notSup "Infix type operators"
@@ -68,13 +74,22 @@ instValidate :: InstDecl -> Validate (S.Decl SrcLoc)
 instValidate = undefined
 
 matchValidate :: Match -> Validate (S.Match SrcLoc)
-matchValidate = undefined
+matchValidate (Match _ n pats Nothing (UnGuardedRhs e) (BDecls decs)) =
+  S.Match <$> nameValidate n
+          <*> mapM patValidate pats
+          <*> expValidate e
+          <*> mapM ndeclValidate decs
+matchValidate (Match loc _ _ _ _ _) =
+  notSupLoc loc "Function clause extensions"
 
 conValidate :: QualConDecl -> Validate S.ConD
 conValidate (QualConDecl _ [] [] (ConDecl n tys)) =
   S.ConD <$> nameValidate n <*> mapM tyValidate tys
 conValidate (QualConDecl loc _ _ _) = notSupLoc loc "Construct extensions"
 
+ndeclValidate :: Decl -> Validate (S.NestedDecl a)
+ndeclValidate = \case
+  TypeSig _ [n] t -> S.NSig <$> nameValidate n <*> tyValidate t
 
 declValidate :: Decl -> Validate (S.Decl SrcLoc)
 declValidate = \case

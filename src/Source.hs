@@ -29,21 +29,21 @@ data Pat a = WildP
            | ListP a [Pat a]
            | TupleP a (Pat a) (Pat a)
 
-data Match a = Match [Pat a] (Exp a)
+data Match a = Match Name [Pat a] (Exp a) [NestedDecl a]
 data Branch a = Branch (Pat a) (Exp a)
+
+data NestedDecl a = NSig Name Type
+                  | NFun Name (Fun a)
 
 data Constr = Constr Name [Name]
 data Cxt = Cxt [Constr]
 
 data FunSig = FunSig Name Cxt Type
-data Fun a = Fun a Name [Match a]
-
-data ClassMem a = Signature Name Type
-                | Method Name (Fun a)
+data Fun a = Fun a Name [Match a] [NestedDecl a]
 
 data Decl a = DFun (Fun a)
-            | DClass Name Name [ClassMem a]
-            | DInst Name Type [ClassMem a]
+            | DClass Name Name [NestedDecl a]
+            | DInst Name Type [NestedDecl a]
             | DData Name [ConD]
             | DSig FunSig
 
