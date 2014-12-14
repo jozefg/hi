@@ -70,8 +70,11 @@ instValidate = undefined
 matchValidate :: Match -> Validate (S.Match SrcLoc)
 matchValidate = undefined
 
-constrValidate :: QualConDecl -> Validate S.Constr
-constrValidate = undefined
+conValidate :: QualConDecl -> Validate S.ConD
+conValidate (QualConDecl _ [] [] (ConDecl n tys)) =
+  S.ConD <$> nameValidate n <*> mapM tyValidate tys
+conValidate (QualConDecl loc _ _ _) = notSupLoc loc "Construct extensions"
+
 
 declValidate :: Decl -> Validate (S.Decl SrcLoc)
 declValidate = \case
