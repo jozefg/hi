@@ -1,4 +1,4 @@
-## Write You a Haskell for Great Good
+## Hi - A Haskell interpreter
 
 In the style of [Write Yourself A Scheme][wyas] I'd like to build
 something similar but for Haskell. This would not be aimed at

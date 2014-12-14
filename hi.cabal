@@ -1,4 +1,4 @@
-name:                wyah
+name:                hi
 version:             0.1.0.0
 synopsis:            A small and readable interpreter for Haskell
 license:             MIT
@@ -9,7 +9,7 @@ category:            Language
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-executable wyah
+executable hi
   main-is:             Main.hs
   other-modules:       SyntaxValidate
   build-depends:       base >=4.0 && <5.0
