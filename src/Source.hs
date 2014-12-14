@@ -19,17 +19,34 @@ data Type = TFun Type Type
           | TIO
           | TChar
 
-data Constr a
+data ConDef = ConDef Name [Type]
 
-data Pat a
-data Match a
+data Pat a = WildP
+           | VarP a Name
+           | ConP a Name [Pat a]
+           | IntP a Int
+           | CharP a Char
+           | ListP a [Pat a]
+           | TupleP a (Pat a) (Pat a)
 
-data Cxt a
-data Class a
-data Decl a
+data Match a = Match (Pat a) (Exp a)
 
-data Binding a
+data Constr = Constr Name [Name]
+data Cxt = Cxt [Constr]
 
+data FunSig = FunSig Name Cxt Type
+data Fun a = Fun a Name [Match a]
+
+data ClassMem a = Signature Name Type
+                | Method Name (Fun a)
+
+data Decl a = DFun (Fun a)
+            | DClass Name Name [ClassMem a]
+            | DInst Name Type [ClassMem a]
+            | DData Name [Constr]
+            | DSig FunSig
+
+data Binding a = Bind (Pat a) (Exp a)
 data Exp a = Var a Name
            | Con a Name
            | LitChar a Char
@@ -44,4 +61,4 @@ data Exp a = Var a Name
            | If (Exp a) (Exp a) (Exp a)
            | Tuple (Exp a) (Exp a)
            | Lambda a [Pat a] (Exp a)
-           | Case a (Exp a) [(Pat a, Exp a)]
+           | Case a (Exp a) [Match a]
