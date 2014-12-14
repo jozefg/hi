@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Validate (InvalidConstruct, syntaxValidate) where
 import           Control.Applicative
+import           Control.Monad
 import           Language.Haskell.Exts.Syntax
 import qualified Source                       as S
 
@@ -42,8 +43,23 @@ tyValidate = \case
   TySplice{} -> notSup "Type splice"
   TyBang{} -> notSup "Type bangs"
 
+asstValidate :: Asst -> Validate S.Constr
+asstValidate VarA{} = notSup "Constraint kinds"
+asstValidate InfixA{} = notSup "Infix type operators"
+asstValidate EqualP{} = notSup "Equality constraints"
+asstValidate IParam{} = notSup "Implicit parameters"
+asstValidate (ParenA a) = asstValidate a
+asstValidate (ClassA (UnQual n) tys) = do
+  n' <- nameValidate n
+  tys' <- mapM tyValidate tys
+  vars <- forM tys' $ \case
+    (S.TVar n) -> return n
+    _ -> notSup "Flexible constraints"
+  return (S.Constr n' vars)
+asstValidate ClassA{} = notSup "Qualified or Special names"
+
 cxtValidate :: Context -> Validate S.Cxt
-cxtValidate = undefined
+cxtValidate assts = S.Cxt <$> mapM asstValidate assts
 
 classValidate :: ClassDecl -> Validate (S.Decl SrcLoc)
 classValidate = undefined
