@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module SyntaxValidate (InvalidConstruct, syntaxValidate) where
+module Validate (InvalidConstruct, syntaxValidate) where
 import           Language.Haskell.Exts.Syntax
 import qualified Source                       as S
 
