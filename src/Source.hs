@@ -29,7 +29,8 @@ data Pat a = WildP
            | ListP a [Pat a]
            | TupleP a (Pat a) (Pat a)
 
-data Match a = Match (Pat a) (Exp a)
+data Match a = Match [Pat a] (Exp a)
+data Branch a = Branch (Pat a) (Exp a)
 
 data Constr = Constr Name [Name]
 data Cxt = Cxt [Constr]
@@ -61,4 +62,4 @@ data Exp a = Var a Name
            | If (Exp a) (Exp a) (Exp a)
            | Tuple (Exp a) (Exp a)
            | Lambda a [Pat a] (Exp a)
-           | Case a (Exp a) [Match a]
+           | Case a (Exp a) [Branch a]
