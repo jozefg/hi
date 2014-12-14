@@ -19,7 +19,7 @@ data Type = TFun Type Type
           | TIO
           | TChar
 
-data ConDef = ConDef Name [Type]
+data ConD = ConD Name [Type]
 
 data Pat a = WildP
            | VarP a Name
@@ -44,7 +44,7 @@ data ClassMem a = Signature Name Type
 data Decl a = DFun (Fun a)
             | DClass Name Name [ClassMem a]
             | DInst Name Type [ClassMem a]
-            | DData Name [Constr]
+            | DData Name [ConD]
             | DSig FunSig
 
 data Binding a = Bind (Pat a) (Exp a)
