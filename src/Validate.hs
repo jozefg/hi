@@ -176,7 +176,8 @@ declV = \case
     S.DClass <$> cxtV cxt <*> nameV n <*> tvarV a <*> mapM classV cls
   InstDecl _ Nothing [] cxt (UnQual n) [t] inst ->
     S.DInst <$> cxtV cxt <*> nameV n <*> tyV t <*> mapM instV inst
-  InfixDecl _ _ _ _ -> undefined
+  InfixDecl _ _ _ [VarOp n] -> S.DAssoc <$> nameV n
+  InfixDecl _ _ _ [ConOp n] -> S.DAssoc <$> nameV n
   TypeSig _ ns t -> S.DSig <$> sigV ns t
   FunBind ms -> S.DFun <$> funV ms
   _ -> notSup "Fancy declaration"

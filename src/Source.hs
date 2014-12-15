@@ -48,6 +48,7 @@ data Decl a = DFun (Fun a)
             | DData Name [Name] [ConD]
             | DSig FunSig
             | DType Name [Name] Type
+            | DAssoc Name -- Just to ensure that Name exists
 
 data Exp a = Var a Name
            | Con a Name
