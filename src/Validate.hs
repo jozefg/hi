@@ -99,9 +99,11 @@ funValidate :: [Match] -> Validate (S.Fun SrcLoc)
 funValidate ms = mapM matchValidate ms >>= \case
   cs@(S.Match nm _ _ _ : _) -> return (S.Fun nm cs)
 
-ndeclValidate :: Decl -> Validate (S.NestedDecl a)
+ndeclValidate :: Decl -> Validate (S.NestedDecl SrcLoc)
 ndeclValidate = \case
   TypeSig _ [n] t -> S.NSig <$> sigValidate n t
+  FunBind ms -> S.NFun <$> funValidate ms
+  _ -> notSup "Fancy nested data"
 
 
 declValidate :: Decl -> Validate (S.Decl SrcLoc)
