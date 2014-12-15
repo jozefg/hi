@@ -87,13 +87,13 @@ conValidate (QualConDecl _ [] [] (ConDecl n tys)) =
   S.ConD <$> nameValidate n <*> mapM tyValidate tys
 conValidate (QualConDecl loc _ _ _) = notSupLoc loc "Construct extensions"
 
-sigValidate :: Name -> Type -> Validate S.FunSig
+sigValidate :: [Name] -> Type -> Validate S.FunSig
 sigValidate n t =
   case t of
    TyForall _ cxt t ->
-     S.FunSig <$> nameValidate n <*> cxtValidate cxt <*> tyValidate t
+     S.FunSig <$> mapM nameValidate n <*> cxtValidate cxt <*> tyValidate t
    _ ->
-     S.FunSig <$> nameValidate n <*> pure (S.Cxt []) <*> tyValidate t
+     S.FunSig <$> mapM nameValidate n <*> pure (S.Cxt []) <*> tyValidate t
 
 funValidate :: [Match] -> Validate (S.Fun SrcLoc)
 funValidate ms = mapM matchValidate ms >>= \case
@@ -101,7 +101,7 @@ funValidate ms = mapM matchValidate ms >>= \case
 
 ndeclValidate :: Decl -> Validate (S.NestedDecl SrcLoc)
 ndeclValidate = \case
-  TypeSig _ [n] t -> S.NSig <$> sigValidate n t
+  TypeSig _ ns t -> S.NSig <$> sigValidate ns t
   FunBind ms -> S.NFun <$> funValidate ms
   _ -> notSup "Fancy nested data"
 
@@ -123,7 +123,7 @@ declValidate = \case
   ClassDecl _ cxt _ [_] [] cls -> undefined
   InstDecl _ Nothing _ cxt _ tys inst -> undefined
   InfixDecl _ _ _ _ -> undefined
-  TypeSig _ [n] t -> S.DSig <$> sigValidate n t
+  TypeSig _ ns t -> S.DSig <$> sigValidate ns t
   FunBind ms -> S.DFun <$> funValidate ms
   ClassDecl loc _ _ _ _ _ -> notSupLoc loc "Type class extensions"
   InstDecl loc _ _ _ _ _ _ ->

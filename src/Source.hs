@@ -38,7 +38,7 @@ data NestedDecl a = NSig FunSig
 data Constr = Constr Name [Name]
 data Cxt = Cxt [Constr]
 
-data FunSig = FunSig Name Cxt Type
+data FunSig = FunSig [Name] Cxt Type
 data Fun a = Fun Name [Match a]
 
 data Decl a = DFun (Fun a)
