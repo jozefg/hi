@@ -20,7 +20,8 @@ instance Show InvalidConstruct where
     "Invalid construct at " ++ show loc ++ ":\t" ++ message
 
 nameValidate :: Name -> Validate S.Name
-nameValidate = undefined
+nameValidate (Ident n) = pure $ S.Name n
+nameValidate (Symbol s) = pure $ S.Name s
 
 tyValidate :: Type -> Validate S.Type
 tyValidate = \case
