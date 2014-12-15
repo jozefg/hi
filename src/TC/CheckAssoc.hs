@@ -1,4 +1,4 @@
-module CheckAssoc (checkAssoc) where
+module CheckAssoc (checkAssocs) where
 import           Control.Monad
 import           Data.Foldable (foldMap)
 import qualified Data.Set      as S
@@ -10,8 +10,8 @@ assocs = foldr go S.empty
   where go (DAssoc n) s = S.insert n s
         go _ s = s
 
-checkAssoc :: [Decl a] -> Either TypeError ()
-checkAssoc ds = forM_ (S.toList vars) $ \v ->
+checkAssocs :: [Decl a] -> Either TypeError ()
+checkAssocs ds = forM_ (S.toList vars) $ \v ->
   if S.member v globals
   then return ()
   else Left (NoSuchName v)

@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module TC.TySyn where
+module TC.TySyn (checkTySyns) where
 import           Data.Graph
 import qualified Data.Map   as M
 import qualified Data.Set   as S
