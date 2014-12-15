@@ -39,7 +39,7 @@ data Constr = Constr Name [Name]
 data Cxt = Cxt [Constr]
 
 data FunSig = FunSig Name Cxt Type
-data Fun a = Fun a Name [Match a] [NestedDecl a]
+data Fun a = Fun Name [Match a]
 
 data Decl a = DFun (Fun a)
             | DClass Name Name [NestedDecl a]

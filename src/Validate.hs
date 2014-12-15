@@ -95,6 +95,9 @@ sigValidate n t =
    _ ->
      S.FunSig <$> nameValidate n <*> pure (S.Cxt []) <*> tyValidate t
 
+funValidate :: [Match] -> Validate (S.Fun SrcLoc)
+funValidate ms = mapM matchValidate ms >>= \case
+  cs@(S.Match nm _ _ _ : _) -> return (S.Fun nm cs)
 
 ndeclValidate :: Decl -> Validate (S.NestedDecl a)
 ndeclValidate = \case
@@ -109,7 +112,7 @@ declValidate = \case
   InstDecl _ Nothing _ cxt _ tys inst -> undefined
   InfixDecl _ _ _ _ -> undefined
   TypeSig _ [n] t -> S.DSig <$> sigValidate n t
-  FunBind ms -> undefined
+  FunBind ms -> S.DFun <$> funValidate ms
   ClassDecl loc _ _ _ _ _ -> notSupLoc loc "Type class extensions"
   InstDecl loc _ _ _ _ _ _ ->
     notSupLoc loc "Unsupported instance declaration extensions"
