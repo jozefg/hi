@@ -5,6 +5,7 @@ import qualified Data.Set as S
 import           Source
 
 data TypeError = NoSuchName Name
+               | TySynCycle Name
                deriving Show
 
 patVars :: Pat a -> S.Set Name
