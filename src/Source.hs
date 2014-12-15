@@ -49,19 +49,19 @@ data Decl a = DFun (Fun a)
             | DSig FunSig
             | DType Name [Name] Type
 
-data Binding a = Bind (Pat a) (Exp a)
 data Exp a = Var a Name
            | Con a Name
            | LitChar a Char
            | LitInt a Int
            | LitString a String
            | App a (Exp a) (Exp a)
-           | InfixApp a (Exp a) (Exp a) (Exp a) -- Operator in the middle
-           | LeftSection a (Exp a) (Exp a) -- Operator on the right
-           | RightSection a (Exp a) (Exp a) -- Operator on the left
+           | InfixApp a (Exp a) Name (Exp a) -- Operator in the middle
+           | LeftSection a (Exp a) Name -- Operator on the right
+           | RightSection a Name (Exp a) -- Operator on the left
            | List a [Exp a]
-           | Let a [Binding a] (Exp a)
-           | If (Exp a) (Exp a) (Exp a)
-           | Tuple (Exp a) (Exp a)
+           | Let a [NestedDecl a] (Exp a)
+           | If a (Exp a) (Exp a) (Exp a)
+           | Tuple a (Exp a) (Exp a)
            | Lambda a [Pat a] (Exp a)
            | Case a (Exp a) [Branch a]
+           | Annot a (Exp a) Type

@@ -43,8 +43,42 @@ tyV = \case
   TySplice{} -> notSup "Type splice"
   TyBang{} -> notSup "Type bangs"
 
+altV :: Alt -> Validate (S.Branch SrcLoc)
+altV (Alt _ pat (UnGuardedRhs e) (BDecls [])) =
+  S.Branch <$> patV pat <*> expV e
+altV _ = notSup "Fancy case branches"
+
 expV :: Exp -> Validate (S.Exp SrcLoc)
-expV = undefined
+expV = \case
+  Var (UnQual n) -> S.Var noLoc <$> nameV n
+  IPVar{} -> notSup "Implicit variables"
+  Con (UnQual n) -> S.Con noLoc <$> nameV n
+  Lit (Char c) -> pure (S.LitChar noLoc c)
+  Lit (String s) -> pure (S.LitString noLoc s)
+  Lit (Int i) -> pure (S.LitInt noLoc $ fromInteger i)
+  InfixApp l (QVarOp (UnQual n)) r ->
+    S.InfixApp noLoc <$> expV l <*> nameV n <*> expV r
+  InfixApp l (QConOp (UnQual n)) r ->
+    S.InfixApp noLoc <$> expV l <*> nameV n <*> expV r
+  App l r -> S.App noLoc <$> expV l <*> expV r
+  Lambda loc pats e -> S.Lambda loc <$> mapM patV pats <*> expV e
+  Let (BDecls binds) e -> S.Let noLoc <$> mapM ndeclV binds <*> expV e
+  If i t e -> S.If noLoc <$> expV i <*> expV t <*> expV e
+  Case e alts -> S.Case noLoc <$> expV e <*> mapM altV alts
+  Tuple Boxed [l, r] -> S.Tuple noLoc <$> expV l <*> expV r
+  List es -> S.List noLoc <$> mapM expV es
+  Paren e -> expV e
+  LeftSection e (QVarOp (UnQual n)) ->
+    S.LeftSection noLoc <$> expV e <*> nameV n
+  LeftSection e (QConOp (UnQual n)) ->
+    S.LeftSection noLoc <$> expV e <*> nameV n
+  RightSection (QVarOp (UnQual n)) e ->
+    S.RightSection noLoc <$> nameV n <*> expV e
+  RightSection (QConOp (UnQual n)) e ->
+    S.RightSection noLoc <$> nameV n <*> expV e
+  ExpTypeSig loc e t -> S.Annot loc <$> expV e <*> tyV t
+  _ -> notSup "One of a bajillion fancy expressions"
+
 
 patV :: Pat -> Validate (S.Pat SrcLoc)
 patV = \case
