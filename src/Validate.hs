@@ -3,7 +3,7 @@ module Validate (InvalidConstruct, syntaxValidate) where
 import           Control.Applicative
 import           Control.Monad
 import           Language.Haskell.Exts.Syntax
-import           Language.Haskell.Exts.SrcLoc
+import           Language.Haskell.Exts.SrcLoc (noLoc)
 import qualified Source                       as S
 
 data InvalidConstruct = InvalidConstruct SrcLoc String
