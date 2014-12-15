@@ -35,14 +35,17 @@ data Branch a = Branch (Pat a) (Exp a)
 
 data NestedDecl a = NSig FunSig
                   | NFun (Fun a)
+                  | NTop (Top a)
 
 data Constr = Constr Name [Name]
 data Cxt = Cxt [Constr]
 
 data FunSig = FunSig [Name] Cxt Type
 data Fun a = Fun Name [Match a]
+data Top a = Top (Pat a) (Exp a) [NestedDecl a]
 
 data Decl a = DFun (Fun a)
+            | DTop (Top a)
             | DClass Cxt Name Name [NestedDecl a]
             | DInst Cxt Name Type [NestedDecl a]
             | DData Name [Name] [ConD]

@@ -155,12 +155,16 @@ ndeclV :: Decl -> Validate (S.NestedDecl SrcLoc)
 ndeclV = \case
   TypeSig _ ns t -> S.NSig <$> sigV ns t
   FunBind ms -> S.NFun <$> funV ms
+  PatBind _ pat (UnGuardedRhs e) (BDecls decs) -> S.NTop <$> patbV pat e decs
   _ -> notSup "Fancy nested data"
 
 tvarV :: TyVarBind -> Validate S.Name
 tvarV = \case
   UnkindedVar n -> nameV n
   _ -> notSup "Kinded variables"
+
+patbV :: Pat -> Exp -> [Decl] -> Validate (S.Top SrcLoc)
+patbV p e decs = S.Top <$> patV p <*> expV e <*> mapM ndeclV decs
 
 declV :: Decl -> Validate (S.Decl SrcLoc)
 declV = \case
@@ -180,6 +184,7 @@ declV = \case
   InfixDecl _ _ _ [ConOp n] -> S.DAssoc <$> nameV n
   TypeSig _ ns t -> S.DSig <$> sigV ns t
   FunBind ms -> S.DFun <$> funV ms
+  PatBind _ pat (UnGuardedRhs e) (BDecls decs) -> S.DTop <$> patbV pat e decs
   _ -> notSup "Fancy declaration"
 
 syntaxValidate :: Module -> Validate [S.Decl SrcLoc]
