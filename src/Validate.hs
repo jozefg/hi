@@ -19,23 +19,23 @@ instance Show InvalidConstruct where
   show (InvalidConstruct loc message) =
     "Invalid construct at " ++ show loc ++ ":\t" ++ message
 
-nameValidate :: Name -> Validate S.Name
-nameValidate (Ident n) = pure $ S.Name n
-nameValidate (Symbol s) = pure $ S.Name s
+nameV :: Name -> Validate S.Name
+nameV (Ident n) = pure $ S.Name n
+nameV (Symbol s) = pure $ S.Name s
 
-tyValidate :: Type -> Validate S.Type
-tyValidate = \case
+tyV :: Type -> Validate S.Type
+tyV = \case
   TyForall{} -> notSup "Explicit for-alls"
-  TyFun l r -> S.TFun <$> tyValidate l <*> tyValidate r
-  TyTuple Boxed [l, r] -> S.TTuple <$> tyValidate l <*> tyValidate r
+  TyFun l r -> S.TFun <$> tyV l <*> tyV r
+  TyTuple Boxed [l, r] -> S.TTuple <$> tyV l <*> tyV r
   TyTuple {} -> notSup "Tuples with an arity other than 2"
-  TyList t -> S.TList <$> tyValidate t
+  TyList t -> S.TList <$> tyV t
   TyParArray{} -> notSup "Parallel arrays (Who uses these!?)"
-  TyApp l r -> S.TApp <$> tyValidate l <*> tyValidate r
-  TyVar n -> S.TVar <$> nameValidate n
-  TyCon (UnQual n) -> S.TVar <$> nameValidate n
+  TyApp l r -> S.TApp <$> tyV l <*> tyV r
+  TyVar n -> S.TVar <$> nameV n
+  TyCon (UnQual n) -> S.TVar <$> nameV n
   TyCon _ -> notSup "Qualified or Special names"
-  TyParen t -> tyValidate t
+  TyParen t -> tyV t
   TyInfix {} -> notSup "Infix type operators"
   TyKind{} -> notSup "Kinds"
   TyPromoted{} -> notSup "Promoted data types"
@@ -43,103 +43,103 @@ tyValidate = \case
   TySplice{} -> notSup "Type splice"
   TyBang{} -> notSup "Type bangs"
 
-expValidate :: Exp -> Validate (S.Exp SrcLoc)
-expValidate = undefined
+expV :: Exp -> Validate (S.Exp SrcLoc)
+expV = undefined
 
-patValidate :: Pat -> Validate (S.Pat SrcLoc)
-patValidate = \case
+patV :: Pat -> Validate (S.Pat SrcLoc)
+patV = \case
   PWildCard -> pure S.WildP
-  PVar n -> S.VarP noLoc <$> nameValidate n
-  PTuple Boxed [l, r] -> S.TupleP noLoc <$> patValidate l <*> patValidate r
+  PVar n -> S.VarP noLoc <$> nameV n
+  PTuple Boxed [l, r] -> S.TupleP noLoc <$> patV l <*> patV r
   PTuple {} -> notSup "Fancy tuple patterns"
-  PList pats -> S.ListP noLoc <$> mapM patValidate pats
+  PList pats -> S.ListP noLoc <$> mapM patV pats
   PLit _ (Char c) -> pure $ S.CharP noLoc c
   PLit _ (String s) -> pure $ S.StringP noLoc s
   PLit s (Int i) -> pure $ case s of
     Negative -> S.IntP noLoc (fromInteger $ -i)
     Signless -> S.IntP noLoc (fromInteger i)
   PApp (UnQual n) pats ->
-    S.ConP noLoc <$> nameValidate n <*> mapM patValidate pats
-  PParen p -> patValidate p
+    S.ConP noLoc <$> nameV n <*> mapM patV pats
+  PParen p -> patV p
   PApp _ _ -> notSup "Qualified or Special names"
   _ -> notSup "Fancy pattern"
 
-asstValidate :: Asst -> Validate S.Constr
-asstValidate VarA{} = notSup "Constraint kinds"
-asstValidate InfixA{} = notSup "Infix type operators"
-asstValidate EqualP{} = notSup "Equality constraints"
-asstValidate IParam{} = notSup "Implicit parameters"
-asstValidate (ParenA a) = asstValidate a
-asstValidate (ClassA (UnQual n) tys) = do
-  n' <- nameValidate n
-  tys' <- mapM tyValidate tys
+asstV :: Asst -> Validate S.Constr
+asstV VarA{} = notSup "Constraint kinds"
+asstV InfixA{} = notSup "Infix type operators"
+asstV EqualP{} = notSup "Equality constraints"
+asstV IParam{} = notSup "Implicit parameters"
+asstV (ParenA a) = asstV a
+asstV (ClassA (UnQual n) tys) = do
+  n' <- nameV n
+  tys' <- mapM tyV tys
   vars <- forM tys' $ \case
     (S.TVar n) -> return n
     _ -> notSup "Flexible constraints"
   return (S.Constr n' vars)
-asstValidate ClassA{} = notSup "Qualified or Special names"
+asstV ClassA{} = notSup "Qualified or Special names"
 
-cxtValidate :: Context -> Validate S.Cxt
-cxtValidate assts = S.Cxt <$> mapM asstValidate assts
+cxtV :: Context -> Validate S.Cxt
+cxtV assts = S.Cxt <$> mapM asstV assts
 
-classValidate :: ClassDecl -> Validate (S.Decl SrcLoc)
-classValidate = undefined
+classV :: ClassDecl -> Validate (S.Decl SrcLoc)
+classV = undefined
 
-instValidate :: InstDecl -> Validate (S.Decl SrcLoc)
-instValidate = undefined
+instV :: InstDecl -> Validate (S.Decl SrcLoc)
+instV = undefined
 
-matchValidate :: Match -> Validate (S.Match SrcLoc)
-matchValidate (Match _ n pats Nothing (UnGuardedRhs e) (BDecls decs)) =
-  S.Match <$> nameValidate n
-          <*> mapM patValidate pats
-          <*> expValidate e
-          <*> mapM ndeclValidate decs
-matchValidate (Match loc _ _ _ _ _) =
+matchV :: Match -> Validate (S.Match SrcLoc)
+matchV (Match _ n pats Nothing (UnGuardedRhs e) (BDecls decs)) =
+  S.Match <$> nameV n
+          <*> mapM patV pats
+          <*> expV e
+          <*> mapM ndeclV decs
+matchV (Match loc _ _ _ _ _) =
   notSupLoc loc "Function clause extensions"
 
-conValidate :: QualConDecl -> Validate S.ConD
-conValidate (QualConDecl _ [] [] (ConDecl n tys)) =
-  S.ConD <$> nameValidate n <*> mapM tyValidate tys
-conValidate (QualConDecl loc _ _ _) = notSupLoc loc "Construct extensions"
+conV :: QualConDecl -> Validate S.ConD
+conV (QualConDecl _ [] [] (ConDecl n tys)) =
+  S.ConD <$> nameV n <*> mapM tyV tys
+conV (QualConDecl loc _ _ _) = notSupLoc loc "Construct extensions"
 
-sigValidate :: [Name] -> Type -> Validate S.FunSig
-sigValidate n t =
+sigV :: [Name] -> Type -> Validate S.FunSig
+sigV n t =
   case t of
    TyForall _ cxt t ->
-     S.FunSig <$> mapM nameValidate n <*> cxtValidate cxt <*> tyValidate t
+     S.FunSig <$> mapM nameV n <*> cxtV cxt <*> tyV t
    _ ->
-     S.FunSig <$> mapM nameValidate n <*> pure (S.Cxt []) <*> tyValidate t
+     S.FunSig <$> mapM nameV n <*> pure (S.Cxt []) <*> tyV t
 
-funValidate :: [Match] -> Validate (S.Fun SrcLoc)
-funValidate ms = mapM matchValidate ms >>= \case
+funV :: [Match] -> Validate (S.Fun SrcLoc)
+funV ms = mapM matchV ms >>= \case
   cs@(S.Match nm _ _ _ : _) -> return (S.Fun nm cs)
 
-ndeclValidate :: Decl -> Validate (S.NestedDecl SrcLoc)
-ndeclValidate = \case
-  TypeSig _ ns t -> S.NSig <$> sigValidate ns t
-  FunBind ms -> S.NFun <$> funValidate ms
+ndeclV :: Decl -> Validate (S.NestedDecl SrcLoc)
+ndeclV = \case
+  TypeSig _ ns t -> S.NSig <$> sigV ns t
+  FunBind ms -> S.NFun <$> funV ms
   _ -> notSup "Fancy nested data"
 
-tvarValidate :: [TyVarBind] -> Validate [S.Name]
-tvarValidate vars = forM vars $ \case
-  UnkindedVar n -> nameValidate n
+tvarV :: [TyVarBind] -> Validate [S.Name]
+tvarV vars = forM vars $ \case
+  UnkindedVar n -> nameV n
   _ -> notSup "Kinded variables"
 
-declValidate :: Decl -> Validate (S.Decl SrcLoc)
-declValidate = \case
+declV :: Decl -> Validate (S.Decl SrcLoc)
+declV = \case
   TypeDecl _ n vars t ->
-    S.DType <$> nameValidate n
-            <*> tvarValidate vars
-            <*> tyValidate t
+    S.DType <$> nameV n
+            <*> tvarV vars
+            <*> tyV t
   DataDecl _ _ [] n vars cons [] ->
-    S.DData <$> nameValidate n
-            <*> tvarValidate vars
-            <*> mapM conValidate cons
+    S.DData <$> nameV n
+            <*> tvarV vars
+            <*> mapM conV cons
   ClassDecl _ cxt _ [_] [] cls -> undefined
   InstDecl _ Nothing _ cxt _ tys inst -> undefined
   InfixDecl _ _ _ _ -> undefined
-  TypeSig _ ns t -> S.DSig <$> sigValidate ns t
-  FunBind ms -> S.DFun <$> funValidate ms
+  TypeSig _ ns t -> S.DSig <$> sigV ns t
+  FunBind ms -> S.DFun <$> funV ms
   ClassDecl loc _ _ _ _ _ -> notSupLoc loc "Type class extensions"
   InstDecl loc _ _ _ _ _ _ ->
     notSupLoc loc "Unsupported instance declaration extensions"
@@ -172,4 +172,4 @@ syntaxValidate :: Module -> Validate [S.Decl SrcLoc]
 syntaxValidate (Module loc _ (_:_) _ _ _ _) = notSupLoc loc "Pragmas"
 syntaxValidate (Module loc _ _ _ (Just (_:_)) _ _) = notSupLoc loc "Export lists"
 syntaxValidate (Module loc _ _ _ _ (_:_) _) = notSupLoc loc "Imports"
-syntaxValidate (Module _ _ _ _ _ _ decs) = mapM declValidate decs
+syntaxValidate (Module _ _ _ _ _ _ decs) = mapM declV decs
