@@ -26,6 +26,7 @@ data Pat a = WildP
            | ConP a Name [Pat a]
            | IntP a Int
            | CharP a Char
+           | StringP a String
            | ListP a [Pat a]
            | TupleP a (Pat a) (Pat a)
 

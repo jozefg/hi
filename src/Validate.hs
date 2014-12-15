@@ -3,22 +3,21 @@ module Validate (InvalidConstruct, syntaxValidate) where
 import           Control.Applicative
 import           Control.Monad
 import           Language.Haskell.Exts.Syntax
+import           Language.Haskell.Exts.SrcLoc
 import qualified Source                       as S
 
-data InvalidConstruct = InvalidConstruct (Maybe SrcLoc) String
+data InvalidConstruct = InvalidConstruct SrcLoc String
 type Validate = Either InvalidConstruct
 
 notSupLoc :: SrcLoc -> String -> Either InvalidConstruct a
-notSupLoc loc str = Left (InvalidConstruct (Just loc) str)
+notSupLoc loc str = Left (InvalidConstruct loc str)
 
 notSup :: String -> Either InvalidConstruct a
-notSup str = Left (InvalidConstruct Nothing str)
+notSup str = Left (InvalidConstruct noLoc str)
 
 instance Show InvalidConstruct where
-  show (InvalidConstruct (Just loc) message) =
+  show (InvalidConstruct loc message) =
     "Invalid construct at " ++ show loc ++ ":\t" ++ message
-  show (InvalidConstruct Nothing message) =
-    "Invalid construct:\t" ++ message
 
 nameValidate :: Name -> Validate S.Name
 nameValidate = undefined
@@ -47,7 +46,22 @@ expValidate :: Exp -> Validate (S.Exp SrcLoc)
 expValidate = undefined
 
 patValidate :: Pat -> Validate (S.Pat SrcLoc)
-patValidate = undefined
+patValidate = \case
+  PWildCard -> pure S.WildP
+  PVar n -> S.VarP noLoc <$> nameValidate n
+  PTuple Boxed [l, r] -> S.TupleP noLoc <$> patValidate l <*> patValidate r
+  PTuple {} -> notSup "Fancy tuple patterns"
+  PList pats -> S.ListP noLoc <$> mapM patValidate pats
+  PLit _ (Char c) -> pure $ S.CharP noLoc c
+  PLit _ (String s) -> pure $ S.StringP noLoc s
+  PLit s (Int i) -> pure $ case s of
+    Negative -> S.IntP noLoc (fromInteger $ -i)
+    Signless -> S.IntP noLoc (fromInteger i)
+  PApp (UnQual n) pats ->
+    S.ConP noLoc <$> nameValidate n <*> mapM patValidate pats
+  PParen p -> patValidate p
+  PApp _ _ -> notSup "Qualified or Special names"
+  _ -> notSup "Fancy pattern"
 
 asstValidate :: Asst -> Validate S.Constr
 asstValidate VarA{} = notSup "Constraint kinds"
