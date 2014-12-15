@@ -43,8 +43,8 @@ data FunSig = FunSig [Name] Cxt Type
 data Fun a = Fun Name [Match a]
 
 data Decl a = DFun (Fun a)
-            | DClass Name Name [NestedDecl a]
-            | DInst Name Type [NestedDecl a]
+            | DClass Cxt Name Name [NestedDecl a]
+            | DInst Cxt Name Type [NestedDecl a]
             | DData Name [Name] [ConD]
             | DSig FunSig
             | DType Name [Name] Type

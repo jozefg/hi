@@ -116,11 +116,14 @@ asstV ClassA{} = notSup "Qualified or Special names"
 cxtV :: Context -> Validate S.Cxt
 cxtV assts = S.Cxt <$> mapM asstV assts
 
-classV :: ClassDecl -> Validate (S.Decl SrcLoc)
-classV = undefined
+classV :: ClassDecl -> Validate (S.NestedDecl SrcLoc)
+classV (ClsDecl d) = ndeclV d
+classV _ = notSup "Fancy class features"
 
-instV :: InstDecl -> Validate (S.Decl SrcLoc)
-instV = undefined
+instV :: InstDecl -> Validate (S.NestedDecl SrcLoc)
+instV (InsDecl d) = ndeclV d
+instV _ = notSup "Fancy instance features"
+
 
 matchV :: Match -> Validate (S.Match SrcLoc)
 matchV (Match _ n pats Nothing (UnGuardedRhs e) (BDecls decs)) =
@@ -154,8 +157,8 @@ ndeclV = \case
   FunBind ms -> S.NFun <$> funV ms
   _ -> notSup "Fancy nested data"
 
-tvarV :: [TyVarBind] -> Validate [S.Name]
-tvarV vars = forM vars $ \case
+tvarV :: TyVarBind -> Validate S.Name
+tvarV = \case
   UnkindedVar n -> nameV n
   _ -> notSup "Kinded variables"
 
@@ -163,14 +166,16 @@ declV :: Decl -> Validate (S.Decl SrcLoc)
 declV = \case
   TypeDecl _ n vars t ->
     S.DType <$> nameV n
-            <*> tvarV vars
+            <*> mapM tvarV vars
             <*> tyV t
   DataDecl _ _ [] n vars cons [] ->
     S.DData <$> nameV n
-            <*> tvarV vars
+            <*> mapM tvarV vars
             <*> mapM conV cons
-  ClassDecl _ cxt _ [_] [] cls -> undefined
-  InstDecl _ Nothing _ cxt _ tys inst -> undefined
+  ClassDecl _ cxt n [a] [] cls ->
+    S.DClass <$> cxtV cxt <*> nameV n <*> tvarV a <*> mapM classV cls
+  InstDecl _ Nothing [] cxt (UnQual n) [t] inst ->
+    S.DInst <$> cxtV cxt <*> nameV n <*> tyV t <*> mapM instV inst
   InfixDecl _ _ _ _ -> undefined
   TypeSig _ ns t -> S.DSig <$> sigV ns t
   FunBind ms -> S.DFun <$> funV ms
