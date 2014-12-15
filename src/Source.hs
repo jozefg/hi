@@ -44,8 +44,9 @@ data Fun a = Fun Name [Match a]
 data Decl a = DFun (Fun a)
             | DClass Name Name [NestedDecl a]
             | DInst Name Type [NestedDecl a]
-            | DData Name [ConD]
+            | DData Name [Name] [ConD]
             | DSig FunSig
+            | DType Name [Name] Type
 
 data Binding a = Bind (Pat a) (Exp a)
 data Exp a = Var a Name

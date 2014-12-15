@@ -105,11 +105,21 @@ ndeclValidate = \case
   FunBind ms -> S.NFun <$> funValidate ms
   _ -> notSup "Fancy nested data"
 
+tvarValidate :: [TyVarBind] -> Validate [S.Name]
+tvarValidate vars = forM vars $ \case
+  UnkindedVar n -> nameValidate n
+  _ -> notSup "Kinded variables"
 
 declValidate :: Decl -> Validate (S.Decl SrcLoc)
 declValidate = \case
-  TypeDecl _ _ _ t -> undefined
-  DataDecl _ _ [] _ _ constrs _ -> undefined
+  TypeDecl _ n vars t ->
+    S.DType <$> nameValidate n
+            <*> tvarValidate vars
+            <*> tyValidate t
+  DataDecl _ _ [] n vars cons [] ->
+    S.DData <$> nameValidate n
+            <*> tvarValidate vars
+            <*> mapM conValidate cons
   ClassDecl _ cxt _ [_] [] cls -> undefined
   InstDecl _ Nothing _ cxt _ tys inst -> undefined
   InfixDecl _ _ _ _ -> undefined
