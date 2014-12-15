@@ -174,33 +174,7 @@ declV = \case
   InfixDecl _ _ _ _ -> undefined
   TypeSig _ ns t -> S.DSig <$> sigV ns t
   FunBind ms -> S.DFun <$> funV ms
-  ClassDecl loc _ _ _ _ _ -> notSupLoc loc "Type class extensions"
-  InstDecl loc _ _ _ _ _ _ ->
-    notSupLoc loc "Unsupported instance declaration extensions"
-  DerivDecl loc _ _ _ _ _ -> notSupLoc loc "Deriving declarations"
-  DataDecl loc _ _ _ _ _ _ -> notSupLoc loc "Unsupported data type extensions"
-  GDataDecl loc _ _ _ _ _ _ _ -> notSupLoc loc "GADT"
-  DataFamDecl loc _ _ _ _ -> notSupLoc loc "Data families"
-  TypeInsDecl loc _ _ -> notSupLoc loc "Type family Instance"
-  DataInsDecl loc _ _ _ _ -> notSupLoc loc "Type family instance"
-  GDataInsDecl loc _ _ _ _ _ -> notSupLoc loc "Type family instance"
-  DefaultDecl loc _ -> notSupLoc loc "Default declarations"
-  SpliceDecl loc _ -> notSupLoc loc "Splices"
-  TypeFamDecl loc _ _ _ -> notSupLoc loc "Type families"
-  ClosedTypeFamDecl loc _ _ _ _ -> notSupLoc loc "Closed type families"
-  PatBind loc _ _ _ -> notSupLoc loc "Pattern bindings, this seems hard"
-  ForImp loc _ _ _ _ _ -> notSupLoc loc "FFI"
-  ForExp loc _ _ _ _ -> notSupLoc loc "FFI"
-  RulePragmaDecl loc _ -> notSupLoc loc "Pragma"
-  DeprPragmaDecl loc _ -> notSupLoc loc "Pragma"
-  WarnPragmaDecl loc _ -> notSupLoc loc "Pragma"
-  InlineSig loc _ _ _ -> notSupLoc loc "Pragma"
-  InlineConlikeSig loc _ _ -> notSupLoc loc "Pragma"
-  SpecSig loc _ _ _ -> notSupLoc loc "Pragma"
-  SpecInlineSig loc _ _ _ _ -> notSupLoc loc "Pragma"
-  InstSig loc _ _ _ _ -> notSupLoc loc "Pragma"
-  AnnPragma loc _ -> notSupLoc loc "Pragma"
-  MinimalPragma loc _ -> notSupLoc loc "Pragma"
+  _ -> notSup "Fancy declaration"
 
 syntaxValidate :: Module -> Validate [S.Decl SrcLoc]
 syntaxValidate (Module loc _ (_:_) _ _ _ _) = notSupLoc loc "Pragmas"
