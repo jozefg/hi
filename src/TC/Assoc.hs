@@ -1,4 +1,4 @@
-module CheckAssoc (checkAssocs) where
+module Assoc (checkAssocs) where
 import           Control.Monad
 import           Data.Foldable (foldMap)
 import qualified Data.Set      as S

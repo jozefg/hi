@@ -32,8 +32,8 @@ tyV = \case
   TyList t -> S.TList <$> tyV t
   TyParArray{} -> notSup "Parallel arrays (Who uses these!?)"
   TyApp l r -> S.TApp <$> tyV l <*> tyV r
-  TyVar n -> S.TVar <$> nameV n
-  TyCon (UnQual n) -> S.TVar <$> nameV n
+  TyVar n -> S.TVar Nothing <$> nameV n
+  TyCon (UnQual n) -> S.TCon Nothing <$> nameV n
   TyCon _ -> notSup "Qualified or Special names"
   TyParen t -> tyV t
   TyInfix {} -> notSup "Infix type operators"
@@ -108,7 +108,7 @@ asstV (ClassA (UnQual n) tys) = do
   n' <- nameV n
   tys' <- mapM tyV tys
   vars <- forM tys' $ \case
-    (S.TVar n) -> return n
+    (S.TVar _ n) -> return n
     _ -> notSup "Flexible constraints"
   return (S.Constr n' vars)
 asstV ClassA{} = notSup "Qualified or Special names"

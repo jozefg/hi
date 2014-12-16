@@ -9,8 +9,8 @@ data PolyType = Forall [Name] Type
 data Type = TFun Type Type
           | TTuple Type Type
           | TUnit
-          | TVar Name
-          | TCon Name
+          | TVar (Maybe Kind) Name
+          | TCon (Maybe Kind) Name
           | TApp Type Type
           | TList Type
           | TInt
