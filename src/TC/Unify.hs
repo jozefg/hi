@@ -3,7 +3,6 @@ module TC.Unify where
 import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.Except
-import           Control.Monad.Gen
 import qualified Data.Map            as M
 import           Data.List           (intersect)
 import           Source
@@ -66,22 +65,34 @@ kunify k1 k2 = case (k1, k2) of
   (Star, Star) -> return nullSubst
   (_, _) -> throwError CannotUnify
 
-kindOf :: Type -> TCM Kind
+kindOf :: Type -> Kind
 kindOf = \case
-  TVar (Just k) _ -> return k
-  TVar Nothing _ -> KVar <$> gen
-  TCon (Just k) _ -> return k
-  TCon Nothing _ -> KVar <$> gen
-  TApp f _ -> kindOf f >>= \(KFun _ t) -> return t
-  TFun -> return $ KFun Star (KFun Star Star)
-  TTuple -> return $ KFun Star (KFun Star Star)
-  TList -> return $ KFun Star Star
-  TInt -> return $ Star
-  TDouble -> return $ Star
-  TUnit -> return $ Star
-  TBool -> return $ Star
-  TIO -> return $ KFun Star Star
-  TChar -> return $ Star
+  TVar (Just k) _ -> k
+  TCon (Just k) _ -> k
+  TApp f _ -> case kindOf f of KFun _ t -> t
+  TFun -> KFun Star (KFun Star Star)
+  TTuple -> KFun Star (KFun Star Star)
+  TList -> KFun Star Star
+  TInt -> Star
+  TDouble -> Star
+  TUnit -> Star
+  TBool -> Star
+  TIO -> KFun Star Star
+  TChar -> Star
 
-tunify :: Type -> Type -> Either TypeError (Subst Type, Subst Kind)
-tunify = undefined
+tunify :: Type -> Type -> TCM (Subst Type, Subst Kind)
+tunify t1 t2 = do
+  case (t1, t2) of
+   (TVar _ n, t) -> (,) <$> add n t nullSubst <*> kindCheck t1 t2
+   (t, TVar _ n) -> (,) <$> add n t nullSubst <*> kindCheck t1 t2
+   (TApp l r, TApp l' r') -> mergeBoth <$> tunify l r <*> tunify l' r'
+   (TCon _ n, TCon _ n') ->
+     if n == n' -- Special case so we don't check kind equality with ==
+     then (,) nullSubst <$> kindCheck t1 t2
+     else throwError CannotUnify
+   (_, _) ->
+     if t1 == t2
+     then (,) nullSubst <$> kindCheck t1 t2
+     else throwError CannotUnify
+  where kindCheck t1 t2 = kunify (kindOf t1) (kindOf t2)
+        mergeBoth (l, r) (l', r') = (mergeApply l l', mergeApply r r')
