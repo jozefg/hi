@@ -1,10 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
 module TC.TySyn (checkTySyns) where
+import           Control.Monad.Except
 import           Data.Graph
 import qualified Data.Map   as M
 import qualified Data.Set   as S
 import           Source
 import           TC.Util
+
 
 tyNamesIn :: Type -> S.Set Name
 tyNamesIn = \case
@@ -28,10 +30,10 @@ dep2sccs deps = map (fmap (\(x, _, _) -> x)) sccs
                . map (\(x, y) -> (x, x, S.toList y))
                $ M.toList deps
 
-checkSCC :: SCC Name -> Either TypeError ()
+checkSCC :: SCC Name -> TCM ()
 checkSCC = \case
   AcyclicSCC _ -> return ()
-  CyclicSCC (h : _) -> Left (TySynCycle h)
+  CyclicSCC (h : _) -> throwError (TySynCycle h)
 
-checkTySyns :: [Decl a] -> Either TypeError ()
+checkTySyns :: [Decl a] -> TCM ()
 checkTySyns = mapM_ checkSCC . dep2sccs . dependencies

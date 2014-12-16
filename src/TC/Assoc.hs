@@ -1,5 +1,6 @@
 module Assoc (checkAssocs) where
 import           Control.Monad
+import           Control.Monad.Except
 import           Data.Foldable (foldMap)
 import qualified Data.Set      as S
 import           Source
@@ -14,6 +15,6 @@ checkAssocs :: [Decl a] -> Either TypeError ()
 checkAssocs ds = forM_ (S.toList vars) $ \v ->
   if S.member v globals
   then return ()
-  else Left (NoSuchName v)
+  else throwError (NoSuchName v)
   where vars = assocs ds
         globals = foldMap boundVars ds

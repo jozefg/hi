@@ -1,5 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module TC.Util where
+import Control.Monad.Gen
+import Control.Monad.Except
 import Data.Foldable (foldMap)
 import qualified Data.Set as S
 import           Source
@@ -10,6 +12,8 @@ data TypeError = NoSuchName Name
                | CannotMerge
                | CannotUnify
                deriving Show
+
+type TCM = GenT Name (Except TypeError)
 
 patVars :: Pat a -> S.Set Name
 patVars = \case

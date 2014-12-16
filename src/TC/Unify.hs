@@ -2,6 +2,8 @@
 module TC.Unify where
 import           Control.Applicative
 import           Control.Monad
+import           Control.Monad.Except
+import           Control.Monad.Gen
 import qualified Data.Map            as M
 import           Data.List           (intersect)
 import           Source
@@ -39,46 +41,47 @@ instance HasNames Type where
           go (TApp l r) = go l `TApp` go r
           go t = t
 
-add :: (HasNames t, Eq t) =>
-       Name -> t -> Subst t -> Either TypeError (Subst t)
-add n t | named n == t = Right . id
-        | occurs n t = const . Left $ OccursFail n
-        | otherwise = Right . M.insert n t
+add :: (HasNames t, Eq t) => Name -> t -> Subst t -> TCM (Subst t)
+add n t | named n == t = return . id
+        | occurs n t = const . throwError $ OccursFail n
+        | otherwise = return . M.insert n t
 
 mergeApply :: HasNames t => Subst t -> Subst t -> Subst t
 mergeApply s1 s2 = M.map (apply s1) s2 `M.union` s1
 
-mergeAgree :: (Eq t, HasNames t) =>
-              Subst t -> Subst t -> Either TypeError (Subst t)
+mergeAgree :: (Eq t, HasNames t) => Subst t -> Subst t -> TCM (Subst t)
 mergeAgree s1 s2 = do
   checkAgrees (M.keys s1 `intersect` M.keys s2)
   return (s1 `M.union` s2)
   where checkAgrees nms = forM_ nms $ \n -> do
           let t = apply s1 (named n)
               t' = apply s2 (named n)
-          when (t /= t') . Left $ CannotMerge -- Todo, this should show t
+          when (t /= t') . throwError $ CannotMerge -- Todo, this should show t
 
-kunify :: Kind -> Kind -> Either TypeError (Subst Kind)
+kunify :: Kind -> Kind -> TCM (Subst Kind)
 kunify k1 k2 = case (k1, k2) of
   (KVar n, t) -> add n t nullSubst
   (t, KVar n) -> add n t nullSubst
   (KFun l r, KFun l' r') -> mergeApply <$> kunify l r <*> kunify l' r'
-  (Star, Star) -> Right nullSubst
-  (_, _) -> Left CannotUnify
+  (Star, Star) -> return nullSubst
+  (_, _) -> throwError CannotUnify
 
-kindOf :: Type -> Kind
+kindOf :: Type -> TCM Kind
 kindOf = \case
-  TVar (Just k) _ -> k
-  TVar Nothing _ -> undefined
-  TCon (Just k) _ -> k
-  TCon Nothing _ -> undefined
-  TApp f _ -> case kindOf f of KFun _ t -> t
-  TFun -> KFun Star (KFun Star Star)
-  TTuple -> KFun Star (KFun Star Star)
-  TList -> KFun Star Star
-  TInt -> Star
-  TDouble -> Star
-  TUnit -> Star
-  TBool -> Star
-  TIO -> KFun Star Star
-  TChar -> Star
+  TVar (Just k) _ -> return k
+  TVar Nothing _ -> KVar <$> gen
+  TCon (Just k) _ -> return k
+  TCon Nothing _ -> KVar <$> gen
+  TApp f _ -> kindOf f >>= \(KFun _ t) -> return t
+  TFun -> return $ KFun Star (KFun Star Star)
+  TTuple -> return $ KFun Star (KFun Star Star)
+  TList -> return $ KFun Star Star
+  TInt -> return $ Star
+  TDouble -> return $ Star
+  TUnit -> return $ Star
+  TBool -> return $ Star
+  TIO -> return $ KFun Star Star
+  TChar -> return $ Star
+
+tunify :: Type -> Type -> Either TypeError (Subst Type, Subst Kind)
+tunify = undefined
