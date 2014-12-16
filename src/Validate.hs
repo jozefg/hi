@@ -26,10 +26,10 @@ nameV (Symbol s) = pure $ S.Name s
 tyV :: Type -> Validate S.Type
 tyV = \case
   TyForall{} -> notSup "Explicit for-alls"
-  TyFun l r -> S.TFun <$> tyV l <*> tyV r
-  TyTuple Boxed [l, r] -> S.TTuple <$> tyV l <*> tyV r
+  TyFun l r -> S.tfun <$> tyV l <*> tyV r
+  TyTuple Boxed [l, r] -> S.ttuple <$> tyV l <*> tyV r
   TyTuple {} -> notSup "Tuples with an arity other than 2"
-  TyList t -> S.TList <$> tyV t
+  TyList t -> S.tlist <$> tyV t
   TyParArray{} -> notSup "Parallel arrays (Who uses these!?)"
   TyApp l r -> S.TApp <$> tyV l <*> tyV r
   TyVar n -> S.TVar Nothing <$> nameV n

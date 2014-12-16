@@ -9,9 +9,7 @@ import           TC.Util
 tyNamesIn :: Type -> S.Set Name
 tyNamesIn = \case
   TCon _ n -> S.singleton n
-  TFun l r -> tyNamesIn l `S.union` tyNamesIn r
   TApp l r -> tyNamesIn l `S.union` tyNamesIn r
-  TList t -> tyNamesIn t
   _ -> S.empty
 
 synonymInfo :: [Decl a] -> M.Map Name Type

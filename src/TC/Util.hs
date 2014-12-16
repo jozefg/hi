@@ -8,6 +8,7 @@ data TypeError = NoSuchName Name
                | TySynCycle Name
                | OccursFail Name
                | CannotMerge
+               | CannotUnify
                deriving Show
 
 patVars :: Pat a -> S.Set Name

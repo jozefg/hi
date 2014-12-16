@@ -7,19 +7,27 @@ data Kind = Star | KFun Kind Kind | KVar Name
           deriving Eq
 
 data PolyType = Forall [Name] Type
-data Type = TFun Type Type
-          | TTuple Type Type
-          | TUnit
+data Type = TUnit
           | TVar (Maybe Kind) Name
           | TCon (Maybe Kind) Name
           | TApp Type Type
-          | TList Type
+          | TFun
+          | TTuple
+          | TList
           | TInt
           | TDouble
           | TBool
           | TIO
           | TChar
           deriving Eq
+tfun :: Type -> Type -> Type
+tfun l r = TApp (TApp TFun l) r
+
+ttuple :: Type -> Type -> Type
+ttuple l r = TApp (TApp TTuple l) r
+
+tlist :: Type -> Type
+tlist = TApp TList
 
 data ConD = ConD Name [Type]
 
