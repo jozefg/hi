@@ -3,7 +3,8 @@ module Source where
 data Name = Name String
             deriving (Eq, Show, Ord)
 
-data Kind = Star | KFun Kind Kind
+data Kind = Star | KFun Kind Kind | KVar Name
+          deriving Eq
 
 data PolyType = Forall [Name] Type
 data Type = TFun Type Type
@@ -18,6 +19,7 @@ data Type = TFun Type Type
           | TBool
           | TIO
           | TChar
+          deriving Eq
 
 data ConD = ConD Name [Type]
 

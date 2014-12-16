@@ -6,6 +6,7 @@ import           Source
 
 data TypeError = NoSuchName Name
                | TySynCycle Name
+               | OccursFail Name
                deriving Show
 
 patVars :: Pat a -> S.Set Name
