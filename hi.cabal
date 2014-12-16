@@ -13,6 +13,9 @@ executable hi
   main-is:             Main.hs
   other-modules:       Source
                      , Validate
+                     , TC.Util
+                     , TC.Assoc
+                     , TC.TySyn
   build-depends:       base >=4.0 && <5.0
                      , containers >= 0.5
                      , haskell-src-exts >= 1.0
