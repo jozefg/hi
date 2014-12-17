@@ -62,4 +62,4 @@ mintDecl = \case
           ConD n <$> evalStateT (mapM mintType tys) M.empty
 
 kindMint :: [Decl a] -> TCM [Decl a]
-kindMint = mapM undefined
+kindMint = mapM mintDecl
