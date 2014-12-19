@@ -171,7 +171,7 @@ declV :: Decl -> Validate (S.Decl SrcLoc)
 declV = \case
   TypeDecl _ n vars t ->
     S.DType <$> nameV n
-            <*> mapM tvarV vars
+            <*> mapM (fmap (, Nothing) . tvarV) vars
             <*> tyV t
   DataDecl _ _ [] n vars cons [] ->
     S.DData <$> nameV n
