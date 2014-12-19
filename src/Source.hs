@@ -58,7 +58,7 @@ data Decl a = DFun (Fun a)
             | DTop (Top a)
             | DClass Cxt Name Name [NestedDecl a]
             | DInst Cxt Name Type [NestedDecl a]
-            | DData Name [Name] [ConD]
+            | DData Name [(Name, Maybe Kind)] [ConD]
             | DSig FunSig
             | DType Name [Name] Type
             | DAssoc Name -- Just to ensure that Name exists

@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE LambdaCase #-}
 module Validate (InvalidConstruct, syntaxValidate) where
 import           Control.Applicative
@@ -174,7 +175,7 @@ declV = \case
             <*> tyV t
   DataDecl _ _ [] n vars cons [] ->
     S.DData <$> nameV n
-            <*> mapM tvarV vars
+            <*> mapM (fmap (, Nothing) . tvarV) vars
             <*> mapM conV cons
   ClassDecl _ cxt n [a] [] cls ->
     S.DClass <$> cxtV cxt <*> nameV n <*> tvarV a <*> mapM classV cls

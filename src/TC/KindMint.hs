@@ -53,13 +53,18 @@ mintDecl = \case
   DTop (Top p e ds) -> DTop <$> (Top p <$> mintExp e <*> mapM mintNDecl ds)
   DClass cxt c n nds -> DClass cxt c n <$> mapM mintNDecl nds
   DInst cxt c n nds -> DInst cxt c n <$> mapM mintNDecl nds
-  DData n ns cons -> DData n ns <$> mapM mintCon cons
+  DData n ns cons -> do
+    ns' <- mapM mintName ns
+    let nmap = M.fromList ns'
+        ns'' = map (fmap $ Just . KVar) ns'
+    DData n ns'' <$> mapM (mintCon nmap) cons
   DSig (FunSig nms cxt ty) ->
     DSig . FunSig nms cxt <$> evalStateT (mintType ty) M.empty
   DType n vs t -> DType n vs <$> evalStateT (mintType t) M.empty
   DAssoc n -> return (DAssoc n)
-  where mintCon (ConD n tys) =
-          ConD n <$> evalStateT (mapM mintType tys) M.empty
+  where mintCon nmap (ConD n tys) =
+          ConD n <$> evalStateT (mapM mintType tys) nmap
+        mintName (n, _) = (,) n <$> gen
 
 kindMint :: [Decl a] -> TCM [Decl a]
 kindMint = mapM mintDecl
