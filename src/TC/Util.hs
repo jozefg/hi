@@ -36,3 +36,18 @@ boundVars = \case
   DTop (Top p _ _) -> patVars p
   DClass _ _ _ nds -> foldMap nBoundVars nds
   _ -> S.empty
+
+kindOf :: Type -> Kind
+kindOf = \case
+  TVar (Just k) _ -> k
+  TCon (Just k) _ -> k
+  TApp f _ -> case kindOf f of KFun _ t -> t
+  TFun -> KFun Star (KFun Star Star)
+  TTuple -> KFun Star (KFun Star Star)
+  TList -> KFun Star Star
+  TInt -> Star
+  TDouble -> Star
+  TUnit -> Star
+  TBool -> Star
+  TIO -> KFun Star Star
+  TChar -> Star

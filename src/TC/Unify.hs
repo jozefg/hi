@@ -65,21 +65,6 @@ kunify k1 k2 = case (k1, k2) of
   (Star, Star) -> return nullSubst
   (_, _) -> throwError CannotUnify
 
-kindOf :: Type -> Kind
-kindOf = \case
-  TVar (Just k) _ -> k
-  TCon (Just k) _ -> k
-  TApp f _ -> case kindOf f of KFun _ t -> t
-  TFun -> KFun Star (KFun Star Star)
-  TTuple -> KFun Star (KFun Star Star)
-  TList -> KFun Star Star
-  TInt -> Star
-  TDouble -> Star
-  TUnit -> Star
-  TBool -> Star
-  TIO -> KFun Star Star
-  TChar -> Star
-
 tunify :: Type -> Type -> TCM (Subst Type, Subst Kind)
 tunify t1 t2 = do
   case (t1, t2) of
