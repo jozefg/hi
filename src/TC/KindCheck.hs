@@ -42,3 +42,9 @@ constrainDecl = \case
   where constrainRhs n args res =
           let rhs = foldr KFun res $ map (fromJust . snd) args
           in tell [KVar n :~: rhs]
+
+mkKindSubst :: [Decl a] -> TCM (Subst Kind)
+mkKindSubst = join
+              . fmap (solveConstrs . snd)
+              . runWriterT
+              . mapM constrainDecl
