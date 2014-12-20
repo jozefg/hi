@@ -17,7 +17,7 @@ mint n = fmap (M.lookup n) get >>= \case
 mintType :: Type -> Minted Type
 mintType = \case
   TVar Nothing n -> flip TVar n . Just . KVar <$> mint n
-  TCon Nothing n -> flip TCon n . Just . KVar <$> mint n
+  TCon Nothing n -> return $ TCon (Just $ KVar n) n
   TApp l r -> TApp <$> mintType l <*> mintType r
   t -> return t
 
